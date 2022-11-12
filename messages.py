@@ -27,18 +27,18 @@ async def append_footer(update: Update, context: CallbackContext):
         prev_list = {update.channel_post.id}
 
         # go through already present jobs and get their data
-        for job in  context.job_queue.get_jobs_by_name(mg):
-                logging.info(f"Removed job {job}")
+        for job in context.job_queue.get_jobs_by_name(mg):
+            logging.info(f"Removed job {job}")
 
-                for post_id in job.data["ids"]:
-                    prev_list.add(post_id)
+            for post_id in job.data["ids"]:
+                prev_list.add(post_id)
 
-                if job.data["text"] is not None:
-                    original_caption = job.data["text"]
+            if job.data["text"] is not None:
+                original_caption = job.data["text"]
 
-                job.schedule_removal()
+            job.schedule_removal()
 
-        data = { "ids": prev_list }
+        data = {"ids": prev_list}
 
         if original_caption is not None:
             data["text"] = original_caption
@@ -49,7 +49,7 @@ async def append_footer(update: Update, context: CallbackContext):
 
 async def append_footer_mg(context: CallbackContext):
     logging.info("job-data", context.job.data)
-    posts = sorted( context.job.data["ids"])
+    posts = sorted(context.job.data["ids"])
 
     # clearing the caption for all posts other than the first one in this mediagroup.
     # because if two posts in a media contain a caption, there will be no caption showing up in preview,
@@ -59,12 +59,11 @@ async def append_footer_mg(context: CallbackContext):
             await context.bot.edit_message_caption(CHANNEL, post, caption=None)
         except Exception as e:
             if e.message != "Message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message":
-                logging.exception("Error editing mediagroup other :: ",e)
+                logging.exception("Error editing mediagroup other :: ", e)
             pass
 
     try:
-        await context.bot.edit_message_caption(CHANNEL, posts[0], caption= context.job.data["text"] + FOOTER)
+        await context.bot.edit_message_caption(CHANNEL, posts[0], caption=context.job.data["text"] + FOOTER)
     except Exception as e:
         logging.exception("Error editing mediagroup text :: ", e)
         pass
-
